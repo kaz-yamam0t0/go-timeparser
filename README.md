@@ -61,4 +61,7 @@ fmt.Println(timeparser.ParseTimeStr("last year", &tm))
 
 https://pkg.go.dev/github.com/kaz-yamam0t0/go-timeparser/timeparser
 
+Most format characters are based on PHP datetime related functions.
+
+https://www.php.net/manual/en/datetime.createfromformat.php
 
