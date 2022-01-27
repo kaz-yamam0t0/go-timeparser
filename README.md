@@ -3,7 +3,7 @@ Flexible Time Parser for Golang
 
 ## Installation
 
-First download `timeparser` with the following command:
+Download `timeparser` with the following command:
 
 ```shell
 $ go get -u github.com/kaz-yamam0t0/go-timeparser/timeparser
