@@ -1,8 +1,8 @@
 package timeparser
 
-import (
-	"strings"
-)
+//import (
+//	"strings"
+//)
 
 // ==============================================================
 // get*Table
@@ -12,28 +12,28 @@ import (
 func getMonthTable() map[string]int {
 	return map[string]int{
 		"january":   1,
-		"jan":       1,
+		//"jan":       1,
 		"february":  2,
-		"feb":       2,
+		//"feb":       2,
 		"march":     3,
-		"mar":       3,
+		//"mar":       3,
 		"april":     4,
-		"apr":       4,
+		//"apr":       4,
 		"may":       5,
 		"june":      6,
-		"jun":       6,
+		//"jun":       6,
 		"july":      7,
-		"jul":       7,
+		//"jul":       7,
 		"august":    8,
-		"aug":       8,
+		//"aug":       8,
 		"september": 9,
-		"sep":       9,
+		//"sep":       9,
 		"octobar":   10,
-		"oct":       10,
+		//"oct":       10,
 		"november":  11,
-		"nov":       11,
+		//"nov":       11,
 		"december":  12,
-		"dec":       12,
+		//"dec":       12,
 	}
 }
 
@@ -75,6 +75,19 @@ func cmpichr(a byte, b byte) bool {
 		b = b - 'A' + 'a'
 	}
 	return a == b
+}
+func cmpiStartWith(a string, b string) bool {
+	a_len := len(a)
+	b_len := len(b)
+	if a_len < b_len {
+		return false
+	}
+	for i:=0; i<b_len; i++ {
+		if ! cmpichr(a[i],b[i]) {
+			return false
+		}
+	}
+	return true
 }
 
 // ==============================================================
@@ -141,10 +154,16 @@ func getMonthNum(s string) int {
 
 // starts with month name
 func startsWithMonthName(s string) (int, string) {
+	if len(s) < 3 {
+		return -1, ""
+	}
 	// month_name should be the lower cases of a correct month name
 	for month_name, month_num := range getMonthTable() {
-		if strings.HasPrefix(s, month_name) {
+		if cmpiStartWith(s, month_name) {
 			return month_num, month_name
+		}
+		if s[0:3] == month_name[0:3] {
+			return month_num, month_name[0:3]
 		}
 	}
 	return -1, ""
@@ -168,8 +187,11 @@ func startsWithWeekdayName(s string) (int, string) {
 		return -1, ""
 	}
 	for weekday_name, weekday_num := range getWeekdayTable() {
-		if strings.HasPrefix(s, weekday_name) || s[:3] == weekday_name[:3] {
+		if cmpiStartWith(s, weekday_name) {
 			return weekday_num, weekday_name
+		}
+		if s[0:3] == weekday_name[0:3] {
+			return weekday_num, weekday_name[0:3]
 		}
 	}
 	return -1, ""

@@ -131,6 +131,12 @@ func scanMonth(s string, pos_s int) (m int, length int) {
 				break
 			}
 			pos++
+			if i == 2 {
+				if pos >= s_len || isSpace(s[pos]) {
+					hit = true
+					break
+				}
+			}
 		}
 		if hit {
 			if pos < s_len && isAlphanumeric(s[pos]) {
@@ -723,8 +729,8 @@ func scanFormat(data *timeData, s string, pos int) int {
 	return pos
 }
 
-// Parse string text to a time.Time variable
-func ParseTimeFormat(format string, base *time.Time) (*time.Time, error) {
+// Convert string to a time.Time variable
+func ParseTimeStr(format string, base *time.Time) (*time.Time, error) {
 	s := strings.TrimSpace(strings.ToLower(format))
 	if s == "" {
 		return nil, errors.New("Failed to parse Time")

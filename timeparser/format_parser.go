@@ -2,9 +2,9 @@ package timeparser
 
 import (
 	"errors"
-	"fmt"
 	"strings"
 	"time"
+	"fmt"
 )
 
 func detectLocation(zone_name string) (*time.Location, error) {
@@ -179,7 +179,7 @@ func parseWeekday(s *string, pos_s *int) (int, bool) {
 func parseInt(s *string, pos_s *int, min_length int, max_length int) (int, bool) {
 	s_len := len(*s)
 	max_ := max_length
-	if s_len-*pos_s < max_ {
+	if s_len-*pos_s <= max_ {
 		max_ = s_len - *pos_s
 	}
 	if max_ < min_length {
@@ -311,7 +311,8 @@ func parseFormatChar(format *string, pos *int, s *string, pos_s *int, d *timeDat
 	// Year
 	case 'Y':
 		if n, ok = parseInt(s, pos_s, 4, 4); !ok {
-			return -1, errors.New(fmt.Sprintf("failed to parse format: %s", string((*format)[*pos])))
+			return -1, errors.New(fmt.Sprintf("failed to parse format: %s %s %d", string((*format)[*pos]), (*s), *pos_s))
+			//return -1, errors.New(fmt.Sprintf("failed to parse format: %s", string((*format)[*pos])))
 		}
 		d.setYear(n)
 		(*pos)++
@@ -504,7 +505,7 @@ func parseFormatChar(format *string, pos *int, s *string, pos_s *int, d *timeDat
 	return (*pos_s), nil
 }
 
-// Parse a datetime string with a format string
+// Convert a datetime string to a time.Time variable with format specification
 func ParseFormat(format string, s string) (*time.Time, error) {
 	format = strings.TrimSpace(format)
 	if format == "" {
@@ -532,7 +533,6 @@ func ParseFormat(format string, s string) (*time.Time, error) {
 		}
 
 		if pos >= f_len {
-			fmt.Println("break")
 			break
 		}
 		if pos_s >= s_len {

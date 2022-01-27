@@ -24,11 +24,11 @@ func paddingZero(n string, length int) string {
 	return string(dst)
 }
 
-func tzFormat(d time.Time, o_flg bool) string {
+func tzFormat(d *time.Time, o_flg bool) string {
 	dst := ""
 
 	_, offset_ := d.Zone()
-	if offset_ > 0 {
+	if offset_ >= 0 {
 		dst += "+"
 	} else {
 		dst += "-"
@@ -46,7 +46,7 @@ func tzFormat(d time.Time, o_flg bool) string {
 
 	return dst
 }
-func iso8601FirstDate(d time.Time) time.Time {
+func iso8601FirstDate(d *time.Time) *time.Time {
 	_d := time.Date(d.Year(), 1, 1, 0, 0, 0, 0, d.Location())
 	_t := _d.Unix()
 	_w := int64(_d.Weekday())
@@ -55,10 +55,11 @@ func iso8601FirstDate(d time.Time) time.Time {
 	} else {
 		_t -= (7 - _w) * 86400
 	}
-	return time.Unix(_t, 0)
+	t := time.Unix(_t, 0)
+	return &t
 }
 
-func dateFormatChar(f byte, d time.Time) (string, bool) {
+func timeFormatChr(f byte, d *time.Time) (string, bool) {
 	switch f {
 	// Date
 	case 'd':
@@ -124,7 +125,8 @@ func dateFormatChar(f byte, d time.Time) (string, bool) {
 		return "0", true
 	case 'o':
 		_d := iso8601FirstDate(d)
-		_next_d := iso8601FirstDate(_d.AddDate(0, 0, 365+7))
+		_tmp := _d.AddDate(0, 0, 365+7)
+		_next_d := iso8601FirstDate(&_tmp)
 		_y := d.Year()
 		if d.Unix() < _d.Unix() {
 			_y--
@@ -177,9 +179,9 @@ func dateFormatChar(f byte, d time.Time) (string, bool) {
 
 	// Full Date/Time
 	case 'c':
-		return DateFormat("Y-m-d\\TH:i:sP", d), true
+		return FormatTime("Y-m-d\\TH:i:sP", d), true
 	case 'r':
-		return DateFormat("D, d M Y H:i:s O", d), true
+		return FormatTime("D, d M Y H:i:s O", d), true
 	case 'U':
 		return strconv.FormatInt(d.Unix(), 10), true
 
@@ -203,8 +205,13 @@ func dateFormatChar(f byte, d time.Time) (string, bool) {
 	return "", false
 }
 
-// Format a local time/date
-func DateFormat(s string, dt time.Time) string {
+// Format a time.Time variable to a string
+func FormatTime(s string, dt *time.Time) string {
+	if dt == nil {
+		d := time.Now()
+		dt = &d
+	}
+
 	var dst []byte
 	s_len := len(s)
 	pos := 0
@@ -219,7 +226,7 @@ func DateFormat(s string, dt time.Time) string {
 			i++ // skip
 			continue
 		}
-		if b, ok := dateFormatChar(s[i], dt); ok == true {
+		if b, ok := timeFormatChr(s[i], dt); ok == true {
 			if pos < i {
 				dst = append(dst, s[pos:i]...)
 			}

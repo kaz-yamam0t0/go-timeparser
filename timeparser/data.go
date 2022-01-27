@@ -119,7 +119,7 @@ func (data *timeData) reset() {
 	data.z = 0
 	data.loc = nil
 
-	data.flags &= (^SET_YEAR & ^SET_MONTH & ^SET_DAY & ^SET_HOUR & ^SET_MINUTE & ^SET_SECOND & ^SET_MICROSECOND & ^SET_TIMEZONE_OFFSET & ^SET_TIMEZONE_LOCATION)
+	data.flags &= (^SET_YEAR & ^SET_MONTH & ^SET_DAY & ^SET_HOUR & ^SET_MINUTE & ^SET_SECOND & ^SET_MICROSECOND & ^SET_TIMEZONE_OFFSET & ^SET_TIMEZONE_LOCATION & ^SET_AP)
 }
 
 // ============================================================
