@@ -4,6 +4,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"
+	"fmt"
 )
 
 
@@ -37,4 +38,10 @@ func TestFormatTime(t *testing.T) {
 	for format, expected := range testcases {
 		assert.Equal(t, expected, FormatTime(format, &tm))
 	}
+}
+func ExampleFormatTime() {
+	tm := time.Now()
+	fmt.Println(FormatTime("r", &tm))                     // Wed, 29 Dec 2021 18:24:00 +0900
+	fmt.Println(FormatTime("l jS \\of F Y h:i:s A", &tm)) // Wednesday 29th of December 2021 06:24:00 PM
+	fmt.Println(FormatTime("Y-m-d H:i:s", &tm))           // 2021-12-29 18:24:00
 }

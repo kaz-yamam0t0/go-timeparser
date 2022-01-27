@@ -2,11 +2,11 @@ package timeparser
 
 import "time"
 
+// Internal Constants
 const (
 	AM = 1
 	PM = 2
-)
-const (
+
 	SET_YEAR              = 1
 	SET_MONTH             = 2
 	SET_DAY               = 4
@@ -16,10 +16,8 @@ const (
 	SET_MICROSECOND       = 64
 	SET_TIMEZONE_OFFSET   = 128
 	SET_TIMEZONE_LOCATION = 256
-
-	SET_AP = 512
-
-	SKIP_ERRORS = 1024
+	SET_AP                = 512
+	SKIP_ERRORS           = 1024
 )
 
 // Relative Additions or Subtractions

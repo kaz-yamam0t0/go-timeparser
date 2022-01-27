@@ -1,2 +1,2 @@
-// Package timeparser provides a flexible time parser for golang
+// Flexible Time Parser for Golang
 package timeparser

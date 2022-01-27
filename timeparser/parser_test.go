@@ -4,6 +4,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"
+	"fmt"
 )
 
 
@@ -61,4 +62,36 @@ func TestParseTimeStr(t *testing.T) {
 		assert.Equal(t, expected.Second(), tm.Second())
 		assert.Equal(t, expected.Location(), tm.Location())
 	}
+}
+func ExampleParseTimeStr() {
+	// Strtotime(format string) returns int64
+	// or -1 when an error has occurred.
+
+	tm := time.Now()
+
+	// general format
+	fmt.Println(ParseTimeStr("10 September 2000", nil))
+	fmt.Println(ParseTimeStr("2000/09/10", nil))
+	fmt.Println(ParseTimeStr("2000-09-10", nil))
+	fmt.Println(ParseTimeStr("2000-09-10 12:34:56", nil))
+
+	// American or European format (Ambiguous)
+	fmt.Println(ParseTimeStr("9/10/2000", nil))
+	fmt.Println(ParseTimeStr("10.9.2000", nil))
+	fmt.Println(ParseTimeStr("10-9-2000", nil))
+
+	// various formats
+	fmt.Println(ParseTimeStr("Wed, 29 Dec 2021 18:24:00 +0900", nil))
+	fmt.Println(ParseTimeStr("2021-12-29T18:24:00+09:00", nil))
+	fmt.Println(ParseTimeStr("Wednesday 29th December 2021 06:24:00 PM", nil))
+
+	// relative format
+	fmt.Println(ParseTimeStr("+0 day", &tm)) 
+	fmt.Println(ParseTimeStr("+1 day 2 week 3 months -4 years 5 hours -6 minutes 7 seconds", &tm))
+	fmt.Println(ParseTimeStr("-1year -13months -8week", &tm))
+	fmt.Println(ParseTimeStr("1 year ago", &tm))
+	fmt.Println(ParseTimeStr("P1Y2M3DT4H5M6.123456S", &tm)) // ISO 8601 Interval Format
+
+	fmt.Println(ParseTimeStr("next Thursday", &tm))
+	fmt.Println(ParseTimeStr("last Monday", &tm))
 }

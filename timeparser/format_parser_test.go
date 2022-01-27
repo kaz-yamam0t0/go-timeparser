@@ -95,3 +95,29 @@ func TestParseFormat(t *testing.T) {
 	}
 }
 
+
+func ExampleParseFormat() {
+	// `DateCreateFromFormat` returns a time.Time variable
+	// 2021-12-29 18:24:12 +0900 JST
+	tm, err := ParseFormat(" l jS \\of F Y  h:i:s A", "Wednesday 29th of December  2021 06:24:12 PM ")
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(tm)
+
+	// Timezone
+	// 2021-12-29 06:24:12 +0900 JST
+	tm, err = ParseFormat("Y-m-d H:i:s T", "2021-12-29 06:24:12 Asia/Tokyo")
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(tm)
+
+	// Timezone Offset means add or subtract offset with UTC Timezone
+	// 2021-12-29 15:24:12 +0000 UTC
+	tm, err = ParseFormat("Y-m-d H:i:s T", "2021-12-29 06:24:12 +09:00")
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(tm)
+}
