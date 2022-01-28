@@ -249,6 +249,37 @@ func parseFormatChar(format *string, pos *int, s *string, pos_s *int, d *timeDat
 	n := 0
 	ok := false
 	switch (*format)[*pos] {
+	// Long Format
+	case 'r':
+		_format := "D, d M Y H:i:s O"
+		_pos := 0
+		for _pos < len(_format) {
+			_ = skipSpaces(&_format, &_pos)
+			_ = skipSpaces(s, pos_s)
+
+			if _, err := parseFormatChar(&_format, &_pos, s, pos_s, d); err != nil {
+				return -1, errors.New(fmt.Sprintf("failed to parse format: %s", string((*format)[*pos])))
+			}
+		}
+		(*pos)++
+	case 'c':
+		_format := "Y-m-d\\TH:i:sP"
+		_pos := 0
+		for _pos < len(_format) {
+			_ = skipSpaces(&_format, &_pos)
+			_ = skipSpaces(s, pos_s)
+
+			if _, err := parseFormatChar(&_format, &_pos, s, pos_s, d); err != nil {
+				return -1, errors.New(fmt.Sprintf("failed to parse format: %s", string((*format)[*pos])))
+			}
+		}
+		(*pos)++
+
+		/*
+				return FormatTime("Y-m-d\\TH:i:sP", d), true
+	case 'r':
+		return FormatTime("D, d M Y H:i:s O", d), true
+		*/
 	// Day
 	case 'd':
 		fallthrough
@@ -550,7 +581,7 @@ func ParseFormat(format string, s string) (*time.Time, error) {
 		}
 
 		tmp++
-		if tmp > 15 {
+		if tmp > 30 {
 			break
 		}
 	}

@@ -8,9 +8,6 @@ import (
 )
 
 func TestParseFormat(t *testing.T) {
-	//utc, err := time.LoadLocation("UTC")
-	//assert.Nil(t, err)
-
 	// tests for time format
 	expected := time.Date(2021, time.December, 29, 18, 24, 36, 0, time.Local)
 	testcases := map[string]string {
@@ -73,6 +70,11 @@ func TestParseFormat(t *testing.T) {
 		assert.Equal(t, expected.Second(), tm.Second())
 		assert.Equal(t, tz_, tm.Location().String())
 	}
+
+	// Timezone offset set location to UTC
+	utc, err_ := time.LoadLocation("UTC")
+	assert.Nil(t, err_)
+
 	testcases_tz_i := []int{
 		0,
 		-1,
@@ -80,7 +82,7 @@ func TestParseFormat(t *testing.T) {
 		+1,
 		+11,
 	}
-	expected = time.Date(2021, time.December, 29, 12, 24, 36, 0, time.Local)
+	expected = time.Date(2021, time.December, 29, 12, 24, 36, 0, utc)
 	for _, i := range testcases_tz_i {
 		tm, err := ParseFormat("Y-m-d H:i:s T", fmt.Sprintf(" 2021-12-29  12:24:36 %+02d:00", i) )
 
@@ -93,6 +95,26 @@ func TestParseFormat(t *testing.T) {
 		assert.Equal(t, expected.Second(), tm.Second())
 		assert.Equal(t, "UTC", tm.Location().String())
 	}
+
+	// Abbreviated formats
+	expected = time.Date(2021, time.December, 30, 3, 24, 36, 0, utc)
+	testcases = map[string]string {
+		"r" : "Wed, 29 Dec 2021 18:24:36 +0900",
+		"c" : "2021-12-29T18:24:36+09:00",
+	}
+	for format, s := range testcases {
+		tm, err := ParseFormat(format, s)
+
+		assert.Nil(t, err)
+		assert.Equal(t, expected.Year(), tm.Year())
+		assert.Equal(t, expected.Month(), tm.Month())
+		assert.Equal(t, expected.Day(), tm.Day())
+		assert.Equal(t, expected.Hour(), tm.Hour())
+		assert.Equal(t, expected.Minute(), tm.Minute())
+		assert.Equal(t, expected.Second(), tm.Second())
+		assert.Equal(t, "UTC", tm.Location().String())
+	}
+
 }
 
 
