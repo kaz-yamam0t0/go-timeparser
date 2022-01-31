@@ -46,12 +46,12 @@ tm, err := timeparser.ParseTimeStr("Wednesday 29th December 2021 06:24:00 PM", n
 // relative format
 // 
 tm := time.Now()
-fmt.Println(timeparser.ParseTimeStr("1 year ago", &tm))
-fmt.Println(timeparser.ParseTimeStr("+1 day 2 week 3 months -4 years 5 hours -6 minutes 7 seconds", &tm))
-fmt.Println(timeparser.ParseTimeStr("P1Y2M3DT4H5M6.123456S", &tm)) // ISO 8601 Interval Format
+tm, err := timeparser.ParseTimeStr("1 year ago", &tm)
+tm, err := timeparser.ParseTimeStr("+1 day 2 week 3 months -4 years 5 hours -6 minutes 7 seconds", &tm)
+tm, err := timeparser.ParseTimeStr("P1Y2M3DT4H5M6.123456S", &tm) // ISO 8601 Interval Format
 
-fmt.Println(timeparser.ParseTimeStr("next Thursday", &tm))
-fmt.Println(timeparser.ParseTimeStr("last year", &tm))
+tm, err := timeparser.ParseTimeStr("next Thursday", &tm)
+tm, err := timeparser.ParseTimeStr("last year", &tm)
 
 ```
 
