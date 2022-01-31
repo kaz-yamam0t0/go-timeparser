@@ -13,7 +13,7 @@ const (
 	SET_HOUR              = 8
 	SET_MINUTE            = 16
 	SET_SECOND            = 32
-	SET_MICROSECOND       = 64
+	SET_NANOSECOND       = 64
 	SET_TIMEZONE_OFFSET   = 128
 	SET_TIMEZONE_LOCATION = 256
 	SET_AP                = 512
@@ -28,7 +28,7 @@ type timeAddition struct {
 	h  int // set Hour
 	i  int // set Minute
 	s  int // set Second
-	us int // set Microsecond
+	ns int // set Nanosecond
 
 	pos     string // first | next
 	month   int    // number of month
@@ -47,14 +47,14 @@ func newTimeAdditionWithTime(n int, unit string, h int, i int, s int, us int) *t
 }
 
 // Time Data
-type timeData struct {
+type TimeData struct {
 	y         int            // Year
 	m         int            // Month
 	d         int            // Date
 	h         int            // Hour
 	i         int            // Minute
 	s         int            // Second
-	us        int            // Microsecond
+	ns        int            // Nanosecond
 	ap        int            // AM/PM flag (1=AM 2=PM)
 	day       int            // Weekday (actually doesn't affect the result)
 	z         int            // Timezone Offset
@@ -64,18 +64,18 @@ type timeData struct {
 	flags int // flags
 }
 
-// create new TimeData
-func newTimeData() *timeData {
-	d := timeData{1970, 1, 1, 0, 0, 0, 0, 0, 0, 0, nil, make([]timeAddition, 0), 0}
+// create new TimeData of 1970/01/01
+func newTimeData() *TimeData {
+	d := TimeData{1970, 1, 1, 0, 0, 0, 0, 0, 0, 0, nil, make([]timeAddition, 0), 0}
 	return &d
 }
 
-func (data *timeData) appendAddition(a *timeAddition) {
+func (data *TimeData) appendAddition(a *timeAddition) {
 	data.additions = append(data.additions, *a)
 }
 
 // resetIfUnset
-func (data *timeData) resetIfUnset() {
+func (data *TimeData) resetIfUnset() {
 	if !data.hasFlag(SET_YEAR) {
 		data.y = 1970
 	}
@@ -94,8 +94,8 @@ func (data *timeData) resetIfUnset() {
 	if !data.hasFlag(SET_SECOND) {
 		data.s = 0
 	}
-	if !data.hasFlag(SET_MICROSECOND) {
-		data.us = 0
+	if !data.hasFlag(SET_NANOSECOND) {
+		data.ns = 0
 	}
 	if !data.hasFlag(SET_TIMEZONE_OFFSET) {
 		data.z = 0
@@ -106,75 +106,75 @@ func (data *timeData) resetIfUnset() {
 }
 
 // reset
-func (data *timeData) reset() {
+func (data *TimeData) reset() {
 	data.y = 1970
 	data.m = 1
 	data.d = 1
 	data.h = 0
 	data.i = 0
 	data.s = 0
-	data.us = 0
+	data.ns = 0
 	data.z = 0
 	data.loc = nil
 
-	data.flags &= (^SET_YEAR & ^SET_MONTH & ^SET_DAY & ^SET_HOUR & ^SET_MINUTE & ^SET_SECOND & ^SET_MICROSECOND & ^SET_TIMEZONE_OFFSET & ^SET_TIMEZONE_LOCATION & ^SET_AP)
+	data.flags &= (^SET_YEAR & ^SET_MONTH & ^SET_DAY & ^SET_HOUR & ^SET_MINUTE & ^SET_SECOND & ^SET_NANOSECOND & ^SET_TIMEZONE_OFFSET & ^SET_TIMEZONE_LOCATION & ^SET_AP)
 }
 
 // ============================================================
 // setter
 // ============================================================
 
-func (data *timeData) setYear(y int) {
+func (data *TimeData) setYear(y int) {
 	data.y = y
 	data.flags |= SET_YEAR
 }
-func (data *timeData) setMonth(m int) {
+func (data *TimeData) setMonth(m int) {
 	data.m = m
 	data.flags |= SET_MONTH
 }
-func (data *timeData) setDay(d int) {
+func (data *TimeData) setDay(d int) {
 	data.d = d
 	data.flags |= SET_DAY
 }
-func (data *timeData) setHour(h int) {
+func (data *TimeData) setHour(h int) {
 	data.h = h
 	data.flags |= SET_HOUR
 }
-func (data *timeData) setMinute(i int) {
+func (data *TimeData) setMinute(i int) {
 	data.i = i
 	data.flags |= SET_MINUTE
 }
-func (data *timeData) setSecond(s int) {
+func (data *TimeData) setSecond(s int) {
 	data.s = s
 	data.flags |= SET_SECOND
 }
-func (data *timeData) setMicrosecond(s int) {
-	data.us = s
-	data.flags |= SET_MICROSECOND
+func (data *TimeData) setNanosecond(ns int) {
+	data.ns = ns
+	data.flags |= SET_NANOSECOND
 }
-func (data *timeData) setTimezoneOffset(z int) {
+func (data *TimeData) setTimezoneOffset(z int) {
 	data.z = z
 	data.flags |= SET_TIMEZONE_OFFSET
 }
-func (data *timeData) setLocation(loc *time.Location) {
+func (data *TimeData) setLocation(loc *time.Location) {
 	data.loc = loc
 	data.flags |= SET_TIMEZONE_LOCATION
 }
-func (data *timeData) setFromTime(t *time.Time) {
+func (data *TimeData) setFromTime(t *time.Time) {
 	data.setYear(t.Year())
 	data.setMonth(int(t.Month()))
 	data.setDay(t.Day())
 	data.setHour(t.Hour())
 	data.setMinute(t.Minute())
 	data.setSecond(t.Second())
-	data.setMicrosecond(int(t.Nanosecond() / 1e3))
+	data.setNanosecond(t.Nanosecond())
 	data.setLocation(t.Location())
 
 	//_, offset_ := base.Zone()
 	data.setTimezoneOffset(0)
 }
 
-func (data *timeData) setNow() {
+func (data *TimeData) setNow() {
 	t := time.Now()
 	if data.loc != nil {
 		t = t.In(data.loc)
@@ -185,7 +185,7 @@ func (data *timeData) setNow() {
 // ============================================================
 // flags
 // ============================================================
-func (data *timeData) hasFlag(f int) bool {
+func (data *TimeData) hasFlag(f int) bool {
 	return (data.flags & f) == f
 }
 
@@ -194,8 +194,8 @@ func (data *timeData) hasFlag(f int) bool {
 // ============================================================
 
 // normalize Year, Month, Date, Hour, Minute, Second, Millisecond
-func (data *timeData) normalize() {
-	data.s, data.us = norm(data.s, data.us, 1000000)
+func (data *TimeData) normalize() {
+	data.s, data.ns = norm(data.s, data.ns, 1e9)
 	data.i, data.s = norm(data.i, data.s, 60)
 	data.h, data.i = norm(data.h, data.i, 60)
 	data.d, data.h = norm(data.d, data.h, 24)
@@ -205,7 +205,7 @@ func (data *timeData) normalize() {
 }
 
 // normalize Year, Month, Date
-func (data *timeData) normalizeYmd() {
+func (data *TimeData) normalizeYmd() {
 	// year, month
 	m := data.m - 1
 	data.y, m = norm(data.y, m, 12)
@@ -257,12 +257,12 @@ func norm(hi, lo, base int) (nhi, nlo int) {
 // ============================================================
 
 // convert to a time.Time variable
-func (data *timeData) Time() *time.Time {
+func (data *TimeData) Time() *time.Time {
 	loc := time.Local
 	if data.loc != nil {
 		loc = data.loc
 	}
-	res := time.Date(data.y, time.Month(data.m), data.d, data.h, data.i, data.s, data.us*1e3, loc)
+	res := time.Date(data.y, time.Month(data.m), data.d, data.h, data.i, data.s, data.ns, loc)
 
 	if data.z != 0 {
 		tmp := res.Unix()
@@ -277,7 +277,7 @@ func (data *timeData) Time() *time.Time {
 // Addition
 // ============================================================
 
-func (data *timeData) processAdditions() {
+func (data *TimeData) processAdditions() {
 	a_len := len(data.additions)
 	for i := 0; i < a_len; i++ {
 		data.move(&data.additions[i])
@@ -285,7 +285,7 @@ func (data *timeData) processAdditions() {
 	data.additions = []timeAddition{}
 }
 
-func (data *timeData) move(a *timeAddition) {
+func (data *TimeData) move(a *timeAddition) {
 	if a.unit != "" {
 		data.add(a)
 		return
@@ -299,7 +299,7 @@ func (data *timeData) move(a *timeAddition) {
 		}
 		data.m = a.month
 	case a.weekday >= 0:
-		w_ := int(time.Date(data.y, time.Month(data.m), data.d, data.h, data.i, data.s, data.us*1e3, time.Local).Weekday())
+		w_ := int(time.Date(data.y, time.Month(data.m), data.d, data.h, data.i, data.s, data.ns, time.Local).Weekday())
 		if a.pos == "next" {
 			n := (a.weekday+7-1-w_)%7 + 1
 			a.n, a.unit = n, "day"
@@ -322,7 +322,7 @@ func (data *timeData) move(a *timeAddition) {
 	}
 
 }
-func (data *timeData) add(a *timeAddition) {
+func (data *TimeData) add(a *timeAddition) {
 	// might be outside of the range
 	// it will be normalized when data is instantiated.
 	switch a.unit {
@@ -347,13 +347,19 @@ func (data *timeData) add(a *timeAddition) {
 	case "msec":
 		fallthrough
 	case "millisecond":
-		data.us += a.n * 1e3
+		data.ns += a.n * 1e6
 	case "µs":
 		fallthrough
 	case "µsec":
 		fallthrough
 	case "microsecond":
-		data.us += a.n
+		data.ns += a.n * 1e3
+	case "ns":
+		fallthrough
+	case "nsec":
+		fallthrough
+	case "nanosecond":
+		data.ns += a.n
 	case "week":
 		data.d += a.n * 7
 	case "forthnight":
@@ -384,8 +390,8 @@ func (data *timeData) add(a *timeAddition) {
 	if a.s >= 0 {
 		data.s = a.s
 	}
-	if a.us >= 0 {
-		data.us = a.us
+	if a.ns >= 0 {
+		data.ns = a.ns
 	}
 	data.normalize()
 }

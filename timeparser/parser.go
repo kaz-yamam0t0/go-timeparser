@@ -443,7 +443,8 @@ func scanRelativePosition(s string, pos_s int) (n int, unit string, length int) 
 	units := []string{
 		"year", "month", "day", "hour", "minute", "second",
 		"week", "millisecond", "microsecond", "msec", "ms",
-		"µsec", "µs", "usec", "sec", "min", "fortnight", "forthnight",
+		"µsec", "µs", "usec", "nanosecond", "nsec","ns",
+		"sec", "min", "fortnight", "forthnight",
 	}
 	s_ := scanWords(s, pos, units, false)
 	if s_ == nil {
@@ -633,7 +634,7 @@ func scanISOInterval(s string, pos_s int) ([]*timeAddition, int) {
 }
 
 // scan format chunk and add pos
-func scanFormat(data *timeData, s string, pos int) int {
+func scanFormat(data *TimeData, s string, pos int) int {
 	s_len := len(s)
 	if pos >= s_len {
 		return -1

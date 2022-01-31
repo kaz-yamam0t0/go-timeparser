@@ -237,7 +237,7 @@ func parseSuffix(s *string, pos_s *int) bool {
 	return false
 }
 
-func parseFormatChar(format *string, pos *int, s *string, pos_s *int, d *timeData) (int, error) {
+func parseFormatChar(format *string, pos *int, s *string, pos_s *int, d *TimeData) (int, error) {
 	if (*format)[*pos] == '\\' {
 		(*pos)++
 		if (*format)[*pos] == (*s)[*pos_s] {
@@ -423,7 +423,7 @@ func parseFormatChar(format *string, pos *int, s *string, pos_s *int, d *timeDat
 		if f, ok = parseDecimal(s, pos_s, 1, 6); !ok {
 			return -1, errors.New(fmt.Sprintf("failed to parse format: %s", string((*format)[*pos])))
 		}
-		d.setMicrosecond(int(f * 1e6))
+		d.setNanosecond(int(f * 1e9))
 		(*pos)++
 	// Microseconds
 	case 'u':
@@ -431,7 +431,7 @@ func parseFormatChar(format *string, pos *int, s *string, pos_s *int, d *timeDat
 		if f, ok = parseDecimal(s, pos_s, 1, 6); !ok {
 			return -1, errors.New(fmt.Sprintf("failed to parse format: %s", string((*format)[*pos])))
 		}
-		d.setMicrosecond(int(f * 1e6))
+		d.setNanosecond(int(f * 1e9))
 		(*pos)++
 	// Unixtime
 	case 'U':
@@ -446,7 +446,7 @@ func parseFormatChar(format *string, pos *int, s *string, pos_s *int, d *timeDat
 		d.setHour(_t.Hour())
 		d.setMinute(_t.Minute())
 		d.setSecond(_t.Second())
-		d.setMicrosecond(0)
+		d.setNanosecond(0)
 		(*pos)++
 	// Timezone
 	case 'e':
