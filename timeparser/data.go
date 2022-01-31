@@ -1,6 +1,7 @@
 package timeparser
 
 import "time"
+//import "fmt"
 
 // Internal Constants
 const (
@@ -391,6 +392,48 @@ func (data *TimeData) SubMicrosecond(us int) {
 func (data *TimeData) SubNanosecond(ns int) {
 	data.AddNanosecond(-ns)
 }
+// ============================================================
+// Diff
+// ============================================================
+
+func (data *TimeData) DiffYears(d *TimeData) int {
+	return int(data.DiffMonths(d) / 12)
+}
+func (data *TimeData) DiffMonths(d *TimeData) int {
+	y_ := data.y - d.y
+	m_ := data.m - d.m
+	d_ := data.d - d.d
+	
+	m_ += y_ * 12
+
+	if m_ > 0 && d_ < 0 { 
+		m_--
+	} else if m_ < 0 && d_ > 0 {
+		m_++
+	}
+	return m_
+}
+func (data *TimeData) DiffDay(d *TimeData) int {
+	return int(data.DiffSecond(d) / 86400)
+}
+func (data *TimeData) DiffHour(d *TimeData) int {
+	return int(data.DiffSecond(d) / 3600)
+}
+func (data *TimeData) DiffMinute(d *TimeData) int {
+	return int(data.DiffSecond(d) / 60)
+}
+func (data *TimeData) DiffSecond(d *TimeData) int64 {
+	return data.Unix() - d.Unix()
+}
+func (data *TimeData) DiffMillisecond(d *TimeData) int64 {
+	return data.UnixMilli() - d.UnixMilli()
+}
+func (data *TimeData) DiffMicrosecond(d *TimeData) int64 {
+	return data.UnixMicro() - d.UnixMicro()
+}
+func (data *TimeData) DiffNanosecond(d *TimeData) int64 {
+	return data.UnixNano() - d.UnixNano()
+}
 
 
 // ============================================================
@@ -484,6 +527,18 @@ func (data *TimeData) Time() *time.Time {
 	return &res
 }
 
+func (data *TimeData) Unix() int64 {
+	return data.Time().Unix()
+}
+func (data *TimeData) UnixMilli() int64 {
+	return data.Time().UnixMilli()
+}
+func (data *TimeData) UnixMicro() int64 {
+	return data.Time().UnixMicro()
+}
+func (data *TimeData) UnixNano() int64 {
+	return data.Time().UnixNano()
+}
 
 // ============================================================
 // Format
