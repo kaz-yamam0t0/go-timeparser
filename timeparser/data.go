@@ -207,14 +207,20 @@ func (data *TimeData) setLocation(loc *time.Location) {
 	data.flags |= SET_TIMEZONE_LOCATION
 }
 func (data *TimeData) setUTC() {
+	_, offset_ := data.Time().Zone()
+
 	utc, _ := time.LoadLocation("UTC")
 	data.setLocation(utc)
-	if data.z > 0 {
+	if data.z != 0 {
 		z := data.z
 
 		data.setTimezoneOffset(0)
 		data.AddSecond(-z)
 	}
+	if offset_ != 0 {
+		data.AddSecond(-offset_)
+	}
+
 }
 
 func (data *TimeData) setFromTime(t *time.Time) {
@@ -581,6 +587,11 @@ func (data *TimeData) UnixNano() int64 {
 func (data *TimeData) Format(s string) string {
 	return FormatTime(s, data.Time())
 }
+func (data *TimeData) String() string {
+	return data.Format("c")
+}
+
+
 
 // ============================================================
 // Addition
