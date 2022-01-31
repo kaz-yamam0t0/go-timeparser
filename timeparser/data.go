@@ -20,6 +20,10 @@ const (
 	SKIP_ERRORS           = 1024
 )
 
+// ============================================================
+// TimeAddition
+// ============================================================
+
 // Relative Additions or Subtractions
 type timeAddition struct {
 	n    int    // number of difference
@@ -46,6 +50,11 @@ func newTimeAdditionWithTime(n int, unit string, h int, i int, s int, us int) *t
 	return &a
 }
 
+
+// ============================================================
+// TimeData
+// ============================================================
+
 // Time Data
 type TimeData struct {
 	y         int            // Year
@@ -69,6 +78,8 @@ func newTimeData() *TimeData {
 	d := TimeData{1970, 1, 1, 0, 0, 0, 0, 0, 0, 0, nil, make([]timeAddition, 0), 0}
 	return &d
 }
+
+
 
 func (data *TimeData) appendAddition(a *timeAddition) {
 	data.additions = append(data.additions, *a)
@@ -121,8 +132,30 @@ func (data *TimeData) reset() {
 }
 
 // ============================================================
+// public constructors
+// ============================================================
+
+// create TimeData from string format
+func New(format string) (*TimeData, error) {
+	data, err := parseTimeStr(format, nil)
+	if err != nil {
+		return nil, err
+	}
+	return data, nil
+}
+
+func Now() *TimeData {
+	data := newTimeData()
+	data.setNow()
+	return data
+}
+// ============================================================
 // setter
 // ============================================================
+
+// private set* methods doesn't call normalize(), so you have to call normalize() if it is not sure whether argument values are normalized.
+// 
+// public methods always call normalize().
 
 func (data *TimeData) setYear(y int) {
 	data.y = y
@@ -181,6 +214,184 @@ func (data *TimeData) setNow() {
 	}
 	data.setFromTime(&t)
 }
+
+// public methods always call normalize() or normalizeYmd().
+// They are more safe but have less performance.
+
+func (data *TimeData) SetYear(y int) {
+	data.setYear(y)
+	data.normalizeYmd()
+}
+func (data *TimeData) SetMonth(m int) {
+	y := data.y
+	d := data.d
+
+	// normalize year, month
+	m--
+	y, m = norm(data.y, m, 12)
+	m++
+
+	// normalize day
+	last_d := getLastDay(y, m)
+	if last_d < d {
+		// data.setDay(last_d)
+		d = last_d
+	}
+	data.setMonth(m)
+	data.y = y // don't modify flags
+	data.d = d // don't modify flags
+
+	// normalize
+	// data.normalizeYmd()
+}
+func (data *TimeData) SetDay(d int) {
+	data.setDay(d)
+	data.normalizeYmd()
+}
+func (data *TimeData) SetHour(h int) {
+	data.setHour(h)
+	data.normalize()
+}
+func (data *TimeData) SetMinute(i int) {
+	data.setMinute(i)
+	data.normalize()
+}
+func (data *TimeData) SetSecond(s int) {
+	data.setSecond(s)
+	data.normalize()
+}
+func (data *TimeData) SetMillisecond(ms int) {
+	data.setNanosecond(ms * 1e6)
+	data.normalize()
+}
+func (data *TimeData) SetMicrosecond(us int) {
+	data.setNanosecond(us * 1e3)
+	data.normalize()
+}
+func (data *TimeData) SetNanosecond(ns int) {
+	data.setNanosecond(ns)
+	data.normalize()
+}
+func (data *TimeData) SetTimezoneOffset(z int) {
+	data.setTimezoneOffset(z)
+}
+func (data *TimeData) SetLocation(loc *time.Location) {
+	data.setLocation(loc)
+}
+
+func (data *TimeData) SetFromTime(t *time.Time) {
+	data.setFromTime(t)
+}
+func (data *TimeData) SetNow() {
+	data.setNow()
+}
+func (data *TimeData) In(loc *time.Location) *TimeData {
+	data.setLocation(loc)
+	return data
+}
+
+
+
+// ============================================================
+// getter
+// ============================================================
+
+func (data *TimeData) GetYear() int {
+	return data.y
+}
+func (data *TimeData) GetMonth() int {
+	return data.m
+}
+func (data *TimeData) GetDay() int {
+	return data.d
+}
+func (data *TimeData) GetHour() int {
+	return data.h
+}
+func (data *TimeData) GetMinute() int {
+	return data.i
+}
+func (data *TimeData) GetSecond() int {
+	return data.s
+}
+func (data *TimeData) GetMillisecond() int {
+	return int(data.ns / 1e6)
+}
+func (data *TimeData) GetMicrosecond() int {
+	return int(data.ns / 1e3)
+}
+func (data *TimeData) GetNanosecond() int {
+	return data.ns
+}
+func (data *TimeData) GetTimezoneOffset() int {
+	return data.z
+}
+func (data *TimeData) GetLocation() *time.Location {
+	return data.loc
+}
+
+// ============================================================
+// Add / Sub
+// ============================================================
+
+func (data *TimeData) AddYear(y int) {
+	data.SetYear(data.y + y)
+}
+func (data *TimeData) AddMonth(m int) {
+	data.SetMonth(data.m + m)
+}
+func (data *TimeData) AddDay(d int) {
+	data.SetDay(data.d + d)
+}
+func (data *TimeData) AddHour(h int) {
+	data.SetHour(data.h + h)
+}
+func (data *TimeData) AddMinute(i int) {
+	data.SetMinute(data.i + i)
+}
+func (data *TimeData) AddSecond(s int) {
+	data.SetSecond(data.s + s)
+}
+func (data *TimeData) AddMillisecond(ms int) {
+	data.SetNanosecond(data.ns + ms * 1e6)
+}
+func (data *TimeData) AddMicrosecond(us int) {
+	data.SetNanosecond(data.ns + us * 1e3)
+}
+func (data *TimeData) AddNanosecond(ns int) {
+	data.SetNanosecond(data.ns + ns)
+}
+//func (data *TimeData) AddTimezoneOffset(z int) {
+//	data.setTimezoneOffset(data.z + z)
+//}
+func (data *TimeData) SubYear(y int) {
+	data.AddYear(-y)
+}
+func (data *TimeData) SubMonth(m int) {
+	data.AddMonth(-m)
+}
+func (data *TimeData) SubDay(d int) {
+	data.AddDay(-d)
+}
+func (data *TimeData) SubHour(h int) {
+	data.AddHour(-h)
+}
+func (data *TimeData) SubMinute(i int) {
+	data.AddMinute(-i)
+}
+func (data *TimeData) SubSecond(s int) {
+	data.AddSecond(-s)
+}
+func (data *TimeData) SubMillisecond(ms int) {
+	data.AddNanosecond(-ms * 1e6)
+}
+func (data *TimeData) SubMicrosecond(us int) {
+	data.AddNanosecond(-us * 1e3)
+}
+func (data *TimeData) SubNanosecond(ns int) {
+	data.AddNanosecond(-ns)
+}
+
 
 // ============================================================
 // flags
@@ -271,6 +482,15 @@ func (data *TimeData) Time() *time.Time {
 	}
 
 	return &res
+}
+
+
+// ============================================================
+// Format
+// ============================================================
+
+func (data *TimeData) Format(s string) string {
+	return FormatTime(s, data.Time())
 }
 
 // ============================================================

@@ -227,12 +227,14 @@ func scanTimezoneOffset(s string, pos_s int) (s_ int, length int) {
 	}
 	return ((h_*60 + m_) * 60 * sign_), (pos - pos_s)
 }
-func scanTime(s string, pos_s int) (h_ int, m_ int, s_ int, length int) {
+func scanTime(s string, pos_s int) (h_ int, m_ int, s_ int, ns_ int, length int) {
 	// (\d{2})\:(\d{2})(\:(\d{2}))?( (a\.m\.|p\.m\.|am|pm))?
+	// (\d{2})\:(\d{2})(\:(\d{2}))?(\.\d+)?( (a\.m\.|p\.m\.|am|pm))?
 	// may start with "T"
-	h_ = -1
-	m_ = -1
-	s_ = -1
+	h_ = 0
+	m_ = 0
+	s_ = 0
+	ns_ = 0
 	length = -1
 
 	ap_ := -1
@@ -248,41 +250,52 @@ func scanTime(s string, pos_s int) (h_ int, m_ int, s_ int, length int) {
 
 	// h
 	if h_, ok = parseInt(&s, &pos, 1, 2); !ok {
-		return -1, -1, -1, -1
+		return -1, -1, -1, -1, -1
 	}
 	// :
 	if pos >= s_len || s[pos] != ':' {
-		return -1, -1, -1, -1
+		return -1, -1, -1, -1, -1
 	}
 	pos++
 	// m
 	if m_, ok = parseInt(&s, &pos, 2, 2); !ok {
-		return -1, -1, -1, -1
+		return -1, -1, -1, -1, -1
 	}
 	// (:s)?
-	if pos < s_len || s[pos] == ':' {
+	if pos < s_len && s[pos] == ':' {
 		pos++
 		tmp_ := -1
 		if tmp_, ok = parseInt(&s, &pos, 2, 2); ok {
 			s_ = tmp_
 		}
+
+		// (.\d+)?
+		if pos < s_len && s[pos] == '.' {
+			pos++
+			tmp2_ := float64(-1)
+			if tmp2_, ok = parseDecimal(&s, &pos, 1, 9); ok {
+				ns_ = int(tmp2_ * 1e9)
+			} else {
+				return -1, -1, -1, -1, -1
+			}
+		}
 	}
 	// next character must not be a digit
 	if pos < s_len && isNumeric(s[pos]) {
-		return -1, -1, -1, -1
+		return -1, -1, -1, -1, -1
 	}
 
 	// spaces
 	skipSpaces(&s, &pos)
 
 	if (h_ < 0 || 23 < h_) || (m_ < 0 || 59 < m_) || (59 < s_) {
-		return -1, -1, -1, -1
+		return -1, -1, -1, -1, -1
 	}
 
 	// am / pm
 	if ap_, ok = parseAMPM(&s, &pos); ok {
 		if h_ < 1 && 12 < h_ {
-			return -1, -1, -1, -1
+			return -1, -1, -1, -1, -1
 		}
 		if ap_ == AM {
 			if h_ == 12 {
@@ -296,7 +309,7 @@ func scanTime(s string, pos_s int) (h_ int, m_ int, s_ int, length int) {
 			}
 		}
 	}
-	return h_, m_, s_, (pos - pos_s)
+	return h_, m_, s_, ns_, (pos - pos_s)
 }
 
 func scanDmy(s string, pos_s int) (y int, m int, d int, length int) {
@@ -705,11 +718,12 @@ func scanFormat(data *TimeData, s string, pos int) int {
 		data.setMonth(m_)
 		data.setDay(d_)
 		pos += len_
-	} else if h_, m_, s_, len_ := scanTime(s, pos); len_ > 0 {
+	} else if h_, m_, s_, ns_, len_ := scanTime(s, pos); len_ > 0 {
 		// 00:00(:00)? (am|pm)?
 		data.setHour(h_)
 		data.setMinute(m_)
 		data.setSecond(s_)
+		data.setNanosecond(ns_)
 		pos += len_
 	} else if s_, len_ := scanTimezoneOffset(s, pos); len_ > 0 {
 		// +00:00
@@ -731,7 +745,7 @@ func scanFormat(data *TimeData, s string, pos int) int {
 }
 
 // Convert string to a time.Time variable
-func ParseTimeStr(format string, base *time.Time) (*time.Time, error) {
+func parseTimeStr(format string, base *time.Time) (*TimeData, error) {
 	s := strings.TrimSpace(strings.ToLower(format))
 	if s == "" {
 		return nil, errors.New("Failed to parse Time")
@@ -763,6 +777,18 @@ func ParseTimeStr(format string, base *time.Time) (*time.Time, error) {
 
 	// additions
 	data.processAdditions()
+
+	return data, nil
+}
+
+
+
+// Convert string to a time.Time variable
+func ParseTimeStr(format string, base *time.Time) (*time.Time, error) {
+	data, err := parseTimeStr(format, base)
+	if err != nil {
+		return nil, err
+	}
 
 	// result
 	res := data.Time()
