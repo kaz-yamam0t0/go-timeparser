@@ -42,9 +42,9 @@ func preprocessScannedStr(s string) string {
 		}
 		// lower
 		c := s[pos]
-		if 'A' <= c && c <= 'Z' {
-			c = c - 'A' + 'a'
-		}
+		//if 'A' <= c && c <= 'Z' {
+		//	c = c - 'A' + 'a'
+		//}
 
 		dst = append(dst, c)
 
@@ -227,6 +227,36 @@ func scanTimezoneOffset(s string, pos_s int) (s_ int, length int) {
 	}
 	return ((h_*60 + m_) * 60 * sign_), (pos - pos_s)
 }
+
+func scanLocation(s string, pos_s int) (*time.Location, int) {
+	// ([\-\+]?)(\d{2})\:?(\d{2})
+	s_len := len(s)
+	pos := pos_s
+
+	for pos < s_len {
+		if s[pos] == '/' || s[pos] == '_' || s[pos] == '+' || s[pos] == '-' || ('a' <= s[pos] && s[pos] <= 'z') || ('A' <= s[pos] && s[pos] <= 'Z') || ('0' <= s[pos] && s[pos] <= '9') {
+			pos++
+		} else {
+			break
+		}
+	}
+	if pos <= pos_s {
+		return nil, -1
+	}
+	if s[pos_s] == '/' || s[pos-1] == '/' {
+		return nil, -1
+	}
+
+	zone_name := s[pos_s:pos]
+	loc, err := detectLocation(zone_name)
+	if err != nil {
+		return nil, -1
+	}
+
+	return loc, (pos - pos_s)
+}
+
+
 func scanTime(s string, pos_s int) (h_ int, m_ int, s_ int, ns_ int, length int) {
 	// (\d{2})\:(\d{2})(\:(\d{2}))?( (a\.m\.|p\.m\.|am|pm))?
 	// (\d{2})\:(\d{2})(\:(\d{2}))?(\.\d+)?( (a\.m\.|p\.m\.|am|pm))?
@@ -273,7 +303,7 @@ func scanTime(s string, pos_s int) (h_ int, m_ int, s_ int, ns_ int, length int)
 		if pos < s_len && s[pos] == '.' {
 			pos++
 			tmp2_ := float64(-1)
-			if tmp2_, ok = parseDecimal(&s, &pos, 1, 9); ok {
+			if tmp2_, ok = parseDecimal(&s, &pos, 1, 11); ok {
 				ns_ = int(tmp2_ * 1e9)
 			} else {
 				return -1, -1, -1, -1, -1
@@ -589,12 +619,12 @@ func scanISOInterval(s string, pos_s int) ([]*timeAddition, int) {
 			c = c - 'A' + 'a'
 		}
 
-		switch c {
-		case 'y':
+		switch {
+		case c == 'y' || c == 'Y':
 			a = append(a, newTimeAddition(n, "year"))
-		case 'm':
+		case c == 'm' || c == 'M':
 			a = append(a, newTimeAddition(n, "month"))
-		case 'd':
+		case c == 'd' || c == 'D':
 			a = append(a, newTimeAddition(n, "day"))
 		default:
 			break
@@ -628,12 +658,12 @@ func scanISOInterval(s string, pos_s int) ([]*timeAddition, int) {
 			pos++
 		}
 
-		switch c {
-		case 'h':
+		switch {
+		case c == 'h' || c == 'H':
 			a = append(a, newTimeAddition(n, "hour"))
-		case 'm':
+		case c == 'm' || c == 'M':
 			a = append(a, newTimeAddition(n, "minute"))
-		case 's':
+		case c == 's' || c == 'S':
 			a = append(a, newTimeAddition(n, "second"))
 			if d > 0 {
 				a = append(a, newTimeAddition(int(d*1e6), "microsecond"))
@@ -734,6 +764,10 @@ func scanFormat(data *TimeData, s string, pos int) int {
 		data.setLocation(loc)
 		data.setTimezoneOffset(s_)
 		pos += len_
+	} else if loc_, len_ := scanLocation(s, pos); len_ > 0 {
+		data.setLocation(loc_)
+		data.setTimezoneOffset(0)
+		pos += len_
 	} else if y_, ok := parseInt(&s, &pos, 4, 4); ok { // pos has been already increased
 		// Year
 		data.setYear(y_)
@@ -746,7 +780,8 @@ func scanFormat(data *TimeData, s string, pos int) int {
 
 // Convert string to a time.Time variable
 func parseTimeStr(format string, base *time.Time) (*TimeData, error) {
-	s := strings.TrimSpace(strings.ToLower(format))
+	//s := strings.TrimSpace(strings.ToLower(format))
+	s := strings.TrimSpace(format)
 	if s == "" {
 		return nil, errors.New("Failed to parse Time")
 	}
@@ -768,8 +803,10 @@ func parseTimeStr(format string, base *time.Time) (*TimeData, error) {
 	pos := 0
 	cnts := 0
 	for cnts < 15 && pos < s_len {
+		//pos_s := pos
 		pos = scanFormat(data, s, pos)
 		if pos < 0 {
+			//fmt.Println(pos_s, s)
 			return nil, errors.New("Failed to parse Time")
 		}
 		cnts++

@@ -3,8 +3,8 @@ package timeparser
 import (
 	"github.com/stretchr/testify/assert"
 	"testing"
-	//"time"
-	//"fmt"
+	"time"
+	"fmt"
 )
 
 
@@ -139,6 +139,11 @@ func TestSub(t *testing.T) {
 	assert.Equal(t, 124457790, tdata.GetNanosecond())
 }
 
+
+//func TestDiff(t *testing.T) {
+//	tdata, _ := New("2022-08-15 18:22:33.123456789 +0000")
+//	tdata2, _ := New("2023-02-12 12:24:36.123456789 +0000")
+//}
 func TestDiffYears(t *testing.T) {
 	// Format
 	tdata, _ := New("2022-01-15 18:22:33.123456789 +0000")
@@ -238,29 +243,72 @@ func TestFormat(t *testing.T) {
 		assert.Equal(t, expected, tdata.Format(format))
 	}
 }
+
+
+func TestTimezoneOffset(t *testing.T) {
+	// TimeZone Offset always modifys Location to UTC
+	tdata, _ := New("2022-01-31 11:22:33.123456789 +01:00")
+	utc, _ := time.LoadLocation("UTC")
+
+	assert.Equal(t, utc, tdata.GetLocation())
+	assert.Equal(t, 3600, tdata.GetTimezoneOffset())
+
+	tdata, _ = New("2022-01-31 11:22:33.123456789 -0030")
+	assert.Equal(t, -1800, tdata.GetTimezoneOffset())
+
+	// When location is set, GetTimeZoneOffset() is always 0.
+	// Note that GetTimeZoneOffset() doesn't mean the offset of the location 
+	// and it should be always used with UTC Timezone.
+	tokyo, _ := time.LoadLocation("Asia/Tokyo")
+	
+	var err error
+	tdata, err = New("2022-01-31 11:22:33.123456789 Asia/Tokyo")
+	assert.Nil(t, err)
+	assert.Equal(t, tokyo, tdata.GetLocation())
+	assert.Equal(t, 0, tdata.GetTimezoneOffset())
+
+	// SetTimezoneOffset() will set not only timezone but also Location to "UTC".
+	tdata.SetTimezoneOffset(-5 * 60 * 60)
+	assert.Equal(t, utc, tdata.GetLocation())
+	assert.Equal(t, -5 * 60 * 60, tdata.GetTimezoneOffset())
+
+	// you can also define UTC TimeData like this
+	tdata, err = NewAsUTC("2022-01-31 11:22:33.123456789 Asia/Tokyo")
+	//tdata, err = Now().AsUTC()
+	assert.Equal(t, utc, tdata.GetLocation())
+	assert.Equal(t, 0, tdata.GetTimezoneOffset())
+
+	
+}
+
+
+// ============================================================
+// examples
+// ============================================================
+
 func ExampleNew() {
 	tdata, _ := New("2022-01-31 11:22:33.123456789")
 
-	_ = tdata.GetYear()        // 2022
-	_ = tdata.GetMonth()       // 1
-	_ = tdata.GetDay()         // 31
-	_ = tdata.GetHour()        // 11
-	_ = tdata.GetMinute()      // 22
-	_ = tdata.GetSecond()      // 333
-	_ = tdata.GetMillisecond() // 123
-	_ = tdata.GetMicrosecond() // 123456
-	_ = tdata.GetNanosecond()  // 123456789
+	fmt.Println(tdata.GetYear())        // 2022
+	fmt.Println(tdata.GetMonth())       // 1
+	fmt.Println(tdata.GetDay())         // 31
+	fmt.Println(tdata.GetHour())        // 11
+	fmt.Println(tdata.GetMinute())      // 22
+	fmt.Println(tdata.GetSecond())      // 333
+	fmt.Println(tdata.GetMillisecond()) // 123
+	fmt.Println(tdata.GetMicrosecond()) // 123456
+	fmt.Println(tdata.GetNanosecond())  // 123456789
 }
 func ExampleNow() {
 	tdata := Now()
 
-	_ = tdata.GetYear()        // 2022
-	_ = tdata.GetMonth()       // 1
-	_ = tdata.GetDay()         // 31
-	_ = tdata.GetHour()        // 11
-	_ = tdata.GetMinute()      // 22
-	_ = tdata.GetSecond()      // 333
-	_ = tdata.GetMillisecond() // 123
-	_ = tdata.GetMicrosecond() // 123456
-	_ = tdata.GetNanosecond()  // 123456789
+	fmt.Println(tdata.GetYear())        // 2022
+	fmt.Println(tdata.GetMonth())       // 1
+	fmt.Println(tdata.GetDay())         // 31
+	fmt.Println(tdata.GetHour())        // 11
+	fmt.Println(tdata.GetMinute())      // 22
+	fmt.Println(tdata.GetSecond())      // 333
+	fmt.Println(tdata.GetMillisecond()) // 123
+	fmt.Println(tdata.GetMicrosecond()) // 123456
+	fmt.Println(tdata.GetNanosecond())  // 123456789
 }

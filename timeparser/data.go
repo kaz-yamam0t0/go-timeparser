@@ -56,7 +56,6 @@ func newTimeAdditionWithTime(n int, unit string, h int, i int, s int, us int) *t
 // TimeData
 // ============================================================
 
-// Time Data
 type TimeData struct {
 	y         int            // Year
 	m         int            // Month
@@ -74,7 +73,7 @@ type TimeData struct {
 	flags int // flags
 }
 
-// create new TimeData of 1970/01/01
+// create a new TimeData variable of 1970/01/01
 func newTimeData() *TimeData {
 	d := TimeData{1970, 1, 1, 0, 0, 0, 0, 0, 0, 0, nil, make([]timeAddition, 0), 0}
 	return &d
@@ -136,7 +135,7 @@ func (data *TimeData) reset() {
 // public constructors
 // ============================================================
 
-// create TimeData from string format
+// create a new TimeData variable from string format
 func New(format string) (*TimeData, error) {
 	data, err := parseTimeStr(format, nil)
 	if err != nil {
@@ -145,11 +144,24 @@ func New(format string) (*TimeData, error) {
 	return data, nil
 }
 
+// create a new TimeData variable from string format
+func NewAsUTC(format string) (*TimeData, error) {
+	data, err := New(format)
+	if err != nil {
+		return nil, err
+	}
+	return data.AsUTC(), nil
+}
+
+// create a new TimeData variable of Now
 func Now() *TimeData {
 	data := newTimeData()
 	data.setNow()
 	return data
 }
+
+
+
 // ============================================================
 // setter
 // ============================================================
@@ -194,6 +206,17 @@ func (data *TimeData) setLocation(loc *time.Location) {
 	data.loc = loc
 	data.flags |= SET_TIMEZONE_LOCATION
 }
+func (data *TimeData) setUTC() {
+	utc, _ := time.LoadLocation("UTC")
+	data.setLocation(utc)
+	if data.z > 0 {
+		z := data.z
+
+		data.setTimezoneOffset(0)
+		data.AddSecond(-z)
+	}
+}
+
 func (data *TimeData) setFromTime(t *time.Time) {
 	data.setYear(t.Year())
 	data.setMonth(int(t.Month()))
@@ -274,10 +297,14 @@ func (data *TimeData) SetNanosecond(ns int) {
 	data.normalize()
 }
 func (data *TimeData) SetTimezoneOffset(z int) {
+	data.setUTC()
 	data.setTimezoneOffset(z)
 }
 func (data *TimeData) SetLocation(loc *time.Location) {
 	data.setLocation(loc)
+}
+func (data *TimeData) SetUTC() {
+	data.setUTC()
 }
 
 func (data *TimeData) SetFromTime(t *time.Time) {
@@ -286,8 +313,15 @@ func (data *TimeData) SetFromTime(t *time.Time) {
 func (data *TimeData) SetNow() {
 	data.setNow()
 }
+
+// this function is same as `SetLocation` but returns the pointer of the TimeData variable
 func (data *TimeData) In(loc *time.Location) *TimeData {
-	data.setLocation(loc)
+	data.SetLocation(loc)
+	return data
+}
+// this function is same as `SetUTC` but returns the pointer of the TimeData variable
+func (data *TimeData) AsUTC() *TimeData {
+	data.SetUTC()
 	return data
 }
 
