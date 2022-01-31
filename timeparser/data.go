@@ -413,25 +413,25 @@ func (data *TimeData) DiffMonths(d *TimeData) int {
 	}
 	return m_
 }
-func (data *TimeData) DiffDay(d *TimeData) int {
-	return int(data.DiffSecond(d) / 86400)
+func (data *TimeData) DiffDays(d *TimeData) int {
+	return int(data.DiffSeconds(d) / 86400)
 }
-func (data *TimeData) DiffHour(d *TimeData) int {
-	return int(data.DiffSecond(d) / 3600)
+func (data *TimeData) DiffHours(d *TimeData) int {
+	return int(data.DiffSeconds(d) / 3600)
 }
-func (data *TimeData) DiffMinute(d *TimeData) int {
-	return int(data.DiffSecond(d) / 60)
+func (data *TimeData) DiffMinutes(d *TimeData) int {
+	return int(data.DiffSeconds(d) / 60)
 }
-func (data *TimeData) DiffSecond(d *TimeData) int64 {
+func (data *TimeData) DiffSeconds(d *TimeData) int64 {
 	return data.Unix() - d.Unix()
 }
-func (data *TimeData) DiffMillisecond(d *TimeData) int64 {
+func (data *TimeData) DiffMilliseconds(d *TimeData) int64 {
 	return data.UnixMilli() - d.UnixMilli()
 }
-func (data *TimeData) DiffMicrosecond(d *TimeData) int64 {
+func (data *TimeData) DiffMicroseconds(d *TimeData) int64 {
 	return data.UnixMicro() - d.UnixMicro()
 }
-func (data *TimeData) DiffNanosecond(d *TimeData) int64 {
+func (data *TimeData) DiffNanoseconds(d *TimeData) int64 {
 	return data.UnixNano() - d.UnixNano()
 }
 
