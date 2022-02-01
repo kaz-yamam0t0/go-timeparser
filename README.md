@@ -17,6 +17,8 @@ import "github.com/kaz-yamam0t0/go-timeparser/timeparser"
 
 ## Usage
 
+### Simply Parse or Format time.Time variable
+
 ```go
 // 
 // time.Time vars to formatted strings
@@ -55,6 +57,49 @@ tm, err := timeparser.ParseTimeStr("last year", &tm)
 
 ```
 
+### TimeData
+
+TimeData is a simple and flexible type of struct variable used in `timeparser`.
+
+```go
+//tdata, _ := New("2022-01-31 11:22:33.123456789")
+tdata, _ := NewAsUTC("2022-01-31 11:22:33.123456789")
+//tdata, _ := Now()
+
+fmt.Println(tdata.GetYear())        // 2022
+fmt.Println(tdata.GetMonth())       // 1
+fmt.Println(tdata.GetDay())         // 31
+fmt.Println(tdata.GetHour())        // 11
+fmt.Println(tdata.GetMinute())      // 22
+fmt.Println(tdata.GetSecond())      // 33
+fmt.Println(tdata.GetMillisecond()) // 123
+fmt.Println(tdata.GetMicrosecond()) // 123456
+fmt.Println(tdata.GetNanosecond())  // 123456789
+
+// Format
+fmt.Println(tdata.String()) // 2022-01-31T11:22:33+00:00
+fmt.Println(tdata.Format("l jS \\of F Y h:i:s A")) // Monday 31st of January 2022 06:22:33 PM
+
+// Set 
+tdata.SetYear(2022)
+tdata.SetMonth(1)
+tdata.SetDay(31)
+tdata.SetHour(11)
+tdata.SetMinute(22)
+tdata.SetSecond(33)
+
+// Difference
+tm, _ := NewAsUTC("2020-12-31 11:22:33.123456789")
+fmt.Println(tdata.DiffYears(tm))   // 1
+fmt.Println(tdata.DiffMonths(tm))  // 13
+fmt.Println(tdata.DiffDays(tm))    // 396
+fmt.Println(tdata.DiffHours(tm))   // 9504
+fmt.Println(tdata.DiffMinutes(tm)) // 570240
+fmt.Println(tdata.DiffSeconds(tm)) // 34214400
+
+```
+
+
 ## Documentation
 
 `go doc` style documentation:
@@ -64,4 +109,3 @@ https://pkg.go.dev/github.com/kaz-yamam0t0/go-timeparser/timeparser
 Most format characters are based on PHP datetime related functions.
 
 https://www.php.net/manual/en/datetime.createfromformat.php
-

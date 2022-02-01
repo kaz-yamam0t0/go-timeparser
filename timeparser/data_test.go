@@ -280,7 +280,6 @@ func TestTimezoneOffset(t *testing.T) {
 	assert.Equal(t, 11 - 9, tdata.GetHour()) // Asia/Tokyo offset is +9:00
 }
 
-
 // ============================================================
 // examples
 // ============================================================
