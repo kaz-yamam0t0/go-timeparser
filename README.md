@@ -59,14 +59,17 @@ tm, err := timeparser.ParseTimeStr("last year", &tm)
 
 ### TimeData
 
-TimeData is a simple and flexible type of struct variable used in `timeparser`.
+TimeData is a simple and flexible struct used in `timeparser`.
 
 ```go
-//tdata, _ := Now()
+// tdata, _ := Now()
+// tdata, _ := New("2022-01-31 11:22:33.123456789")
 tdata, _ := NewAsUTC("2022-01-31 11:22:33.123456789")
 
+// 
 // If you want to adjust the timezone offset difference from your local env, 
 // first create a variable with `New()` and then convert it to UTC with `SetUTC()`
+// 
 // tdata, _ := New("2022-01-31 11:22:33.123456789")
 // tdata.SetUTC()
 
@@ -80,11 +83,15 @@ fmt.Println(tdata.GetMillisecond()) // 123
 fmt.Println(tdata.GetMicrosecond()) // 123456
 fmt.Println(tdata.GetNanosecond())  // 123456789
 
+// 
 // Format
+// 
 fmt.Println(tdata.String()) // 2022-01-31T11:22:33+00:00
 fmt.Println(tdata.Format("l jS \\of F Y h:i:s A")) // Monday 31st of January 2022 06:22:33 PM
 
-// Set 
+// 
+// Setter methods
+// 
 tdata.SetYear(2022)
 tdata.SetMonth(1)
 tdata.SetDay(31)
@@ -92,7 +99,9 @@ tdata.SetHour(11)
 tdata.SetMinute(22)
 tdata.SetSecond(33)
 
-// Difference
+// 
+// Difference 
+// 
 tm, _ := NewAsUTC("2020-12-31 11:22:33.123456789")
 fmt.Println(tdata.DiffYears(tm))   // 1
 fmt.Println(tdata.DiffMonths(tm))  // 13
