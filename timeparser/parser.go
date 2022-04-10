@@ -198,16 +198,25 @@ func scanTimezoneOffset(s string, pos_s int) (s_ int, length int) {
 	if s_len-pos < 4 {
 		return -1, -1
 	}
-
-	// + or -
-	if s[pos] != '+' && s[pos] != '-' {
+	if s[pos] != 'Z' && s[pos] != 'z' && s[pos] != '+' && s[pos] != '-' {
 		return -1, -1
 	}
-	if s[pos] == '-' {
+
+	// Z
+	if s[pos] == 'Z' || s[pos] == 'z' {
+		pos++
+	}
+
+	// + or -
+	if s[pos] == '+' {
+		pos++
+	} else if s[pos] == '-' {
+		pos++
 		sign_ = -1
 	}
-	pos++
-
+	if s_len-pos < 4 {
+		return -1, -1
+	}
 	// h
 	if h_, ok = parseInt(&s, &pos, 1, 2); !ok {
 		return -1, -1
@@ -255,7 +264,6 @@ func scanLocation(s string, pos_s int) (*time.Location, int) {
 
 	return loc, (pos - pos_s)
 }
-
 
 func scanTime(s string, pos_s int) (h_ int, m_ int, s_ int, ns_ int, length int) {
 	// (\d{2})\:(\d{2})(\:(\d{2}))?( (a\.m\.|p\.m\.|am|pm))?
@@ -486,7 +494,7 @@ func scanRelativePosition(s string, pos_s int) (n int, unit string, length int) 
 	units := []string{
 		"year", "month", "day", "hour", "minute", "second",
 		"week", "millisecond", "microsecond", "msec", "ms",
-		"µsec", "µs", "usec", "nanosecond", "nsec","ns",
+		"µsec", "µs", "usec", "nanosecond", "nsec", "ns",
 		"sec", "min", "fortnight", "forthnight",
 	}
 	s_ := scanWords(s, pos, units, false)
@@ -757,6 +765,7 @@ func scanFormat(data *TimeData, s string, pos int) int {
 		pos += len_
 	} else if s_, len_ := scanTimezoneOffset(s, pos); len_ > 0 {
 		// +00:00
+		// Z00:00
 		loc, err_ := time.LoadLocation("UTC")
 		if err_ != nil {
 			return -1
@@ -817,8 +826,6 @@ func parseTimeStr(format string, base *time.Time) (*TimeData, error) {
 
 	return data, nil
 }
-
-
 
 // Convert string to a time.Time variable
 func ParseTimeStr(format string, base *time.Time) (*time.Time, error) {

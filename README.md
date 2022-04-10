@@ -42,6 +42,7 @@ fmt.Println(tm)
 // 
 tm, err := timeparser.ParseTimeStr("Wed, 29 Dec 2021 18:24:00 +0900", nil)
 tm, err := timeparser.ParseTimeStr("2021-12-29T18:24:00+09:00", nil)
+tm, err := timeparser.ParseTimeStr("2021-12-29T18:24:00Z", nil)
 tm, err := timeparser.ParseTimeStr("Wednesday 29th December 2021 06:24:00 PM", nil)
 
 // 

@@ -2,9 +2,9 @@ package timeparser
 
 import (
 	"errors"
+	"fmt"
 	"strings"
 	"time"
-	"fmt"
 )
 
 func detectLocation(zone_name string) (*time.Location, error) {
@@ -15,6 +15,7 @@ func detectLocation(zone_name string) (*time.Location, error) {
 
 	// @TODO detect unknown location
 	data := [][]string{
+		{"Z", "UTC"},
 		{"JST", "Asia/Tokyo"},
 	}
 	for _, items := range data {
@@ -276,9 +277,9 @@ func parseFormatChar(format *string, pos *int, s *string, pos_s *int, d *TimeDat
 		(*pos)++
 
 		/*
-				return FormatTime("Y-m-d\\TH:i:sP", d), true
-	case 'r':
-		return FormatTime("D, d M Y H:i:s O", d), true
+						return FormatTime("Y-m-d\\TH:i:sP", d), true
+			case 'r':
+				return FormatTime("D, d M Y H:i:s O", d), true
 		*/
 	// Day
 	case 'd':

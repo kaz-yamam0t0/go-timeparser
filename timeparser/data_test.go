@@ -1,12 +1,11 @@
 package timeparser
 
 import (
+	"fmt"
 	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"
-	"fmt"
 )
-
 
 func TestTimeData(t *testing.T) {
 	tdata, err := New("2022-01-31 11:22:33.123456789")
@@ -139,7 +138,6 @@ func TestSub(t *testing.T) {
 	assert.Equal(t, 124457790, tdata.GetNanosecond())
 }
 
-
 //func TestDiff(t *testing.T) {
 //	tdata, _ := New("2022-08-15 18:22:33.123456789 +0000")
 //	tdata2, _ := New("2023-02-12 12:24:36.123456789 +0000")
@@ -148,7 +146,7 @@ func TestDiffYears(t *testing.T) {
 	// Format
 	tdata, _ := New("2022-01-15 18:22:33.123456789 +0000")
 
-	testcases := map[string]int {
+	testcases := map[string]int{
 		// 2020-12-*
 		"2020-12-14 18:22:33.123456789 +0000": 1,
 		"2020-12-15 18:22:33.123456789 +0000": 1,
@@ -184,7 +182,7 @@ func TestDiffMonths(t *testing.T) {
 	// Format
 	tdata, _ := New("2022-01-15 18:22:33.123456789 +0000")
 
-	testcases := map[string]int {
+	testcases := map[string]int{
 		// 2020-12-*
 		"2020-12-14 18:22:33.123456789 +0000": 13,
 		"2020-12-15 18:22:33.123456789 +0000": 13,
@@ -218,35 +216,34 @@ func TestDiffMonths(t *testing.T) {
 func TestFormat(t *testing.T) {
 	// Format
 	tdata, _ := New("2022-01-31 18:22:33.123456789 +0000")
-	testcases := map[string]string {
+	testcases := map[string]string{
 		// general format
-		"r" : "Mon, 31 Jan 2022 18:22:33 +0000",
-		"c" : "2022-01-31T18:22:33+00:00",
+		"r": "Mon, 31 Jan 2022 18:22:33 +0000",
+		"c": "2022-01-31T18:22:33+00:00",
 
-		"l jS \\of F Y h:i:s A" : "Monday 31st of January 2022 06:22:33 PM",
-		"Y-m-d H:i:s" : "2022-01-31 18:22:33",
-		"n/j/y" : "1/31/22",
-		"W" : "5",
+		"l jS \\of F Y h:i:s A": "Monday 31st of January 2022 06:22:33 PM",
+		"Y-m-d H:i:s":           "2022-01-31 18:22:33",
+		"n/j/y":                 "1/31/22",
+		"W":                     "5",
 
 		// Each format
-		"D l w N" : "Mon Monday 1 1" ,
-		"F m M n t" : "January 01 Jan 1 31" , 
-		"Y y L o" : "2022 22 0 2022",
-		"a A B" : "pm PM 432",
-		"g G h H" : "6 18 06 18",
-		"i s u v" : "22 33 123456 123",
-		"Z P O" : "0 +00:00 +0000",
-		"e T" : "UTC UTC",
-		"U" : "1643653353" , 
+		"D l w N":   "Mon Monday 1 1",
+		"F m M n t": "January 01 Jan 1 31",
+		"Y y L o":   "2022 22 0 2022",
+		"a A B":     "pm PM 432",
+		"g G h H":   "6 18 06 18",
+		"i s u v":   "22 33 123456 123",
+		"Z P O":     "0 +00:00 +0000",
+		"e T":       "UTC UTC",
+		"U":         "1643653353",
 	}
 	for format, expected := range testcases {
 		assert.Equal(t, expected, tdata.Format(format))
 	}
 }
 
-
 func TestTimezoneOffset(t *testing.T) {
-	// TimeZone Offset always modifys Location to UTC
+	// TimeZone Offset always modifiess Location to UTC
 	tdata, _ := New("2022-01-31 11:22:33.123456789 +01:00")
 	utc, _ := time.LoadLocation("UTC")
 
@@ -256,11 +253,24 @@ func TestTimezoneOffset(t *testing.T) {
 	tdata, _ = New("2022-01-31 11:22:33.123456789 -0030")
 	assert.Equal(t, -1800, tdata.GetTimezoneOffset())
 
+	// RFC3339
+	tdata, _ = New("2022-01-31T11:22:33.123456789Z")
+	assert.Equal(t, utc, tdata.GetLocation())
+	assert.Equal(t, 0, tdata.GetTimezoneOffset())
+
+	tdata, _ = New("2022-01-31T11:22:33.123456789Z+01:00")
+	assert.Equal(t, utc, tdata.GetLocation())
+	assert.Equal(t, 3600, tdata.GetTimezoneOffset())
+
+	tdata, _ = New("2022-01-31T11:22:33.123456789Z-01:00")
+	assert.Equal(t, utc, tdata.GetLocation())
+	assert.Equal(t, -3600, tdata.GetTimezoneOffset())
+
 	// When location is set, GetTimeZoneOffset() is always 0.
-	// Note that GetTimeZoneOffset() doesn't mean the offset of the location 
+	// Note that GetTimeZoneOffset() doesn't mean the offset of the location
 	// and it should be always used with UTC Timezone.
 	tokyo, _ := time.LoadLocation("Asia/Tokyo")
-	
+
 	var err error
 	tdata, err = New("2022-01-31 11:22:33.123456789 Asia/Tokyo")
 	assert.Nil(t, err)
@@ -270,14 +280,14 @@ func TestTimezoneOffset(t *testing.T) {
 	// SetTimezoneOffset() will set not only timezone but also Location to "UTC".
 	tdata.SetTimezoneOffset(-5 * 60 * 60)
 	assert.Equal(t, utc, tdata.GetLocation())
-	assert.Equal(t, -5 * 60 * 60, tdata.GetTimezoneOffset())
+	assert.Equal(t, -5*60*60, tdata.GetTimezoneOffset())
 
 	// you can also define UTC TimeData like this
 	tdata, err = NewAsUTC("2022-01-31 11:22:33.123456789 Asia/Tokyo")
 	//tdata, err = Now().AsUTC()
 	assert.Equal(t, utc, tdata.GetLocation())
 	assert.Equal(t, 0, tdata.GetTimezoneOffset())
-	assert.Equal(t, 11 - 9, tdata.GetHour()) // Asia/Tokyo offset is +9:00
+	assert.Equal(t, 11-9, tdata.GetHour()) // Asia/Tokyo offset is +9:00
 }
 
 // ============================================================

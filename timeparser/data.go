@@ -1,6 +1,7 @@
 package timeparser
 
 import "time"
+
 //import "fmt"
 
 // Internal Constants
@@ -14,7 +15,7 @@ const (
 	SET_HOUR              = 8
 	SET_MINUTE            = 16
 	SET_SECOND            = 32
-	SET_NANOSECOND       = 64
+	SET_NANOSECOND        = 64
 	SET_TIMEZONE_OFFSET   = 128
 	SET_TIMEZONE_LOCATION = 256
 	SET_AP                = 512
@@ -51,7 +52,6 @@ func newTimeAdditionWithTime(n int, unit string, h int, i int, s int, us int) *t
 	return &a
 }
 
-
 // ============================================================
 // TimeData
 // ============================================================
@@ -78,8 +78,6 @@ func newTimeData() *TimeData {
 	d := TimeData{1970, 1, 1, 0, 0, 0, 0, 0, 0, 0, nil, make([]timeAddition, 0), 0}
 	return &d
 }
-
-
 
 func (data *TimeData) appendAddition(a *timeAddition) {
 	data.additions = append(data.additions, *a)
@@ -160,14 +158,12 @@ func Now() *TimeData {
 	return data
 }
 
-
-
 // ============================================================
 // setter
 // ============================================================
 
 // private set* methods doesn't call normalize(), so you have to call normalize() if it is not sure whether argument values are normalized.
-// 
+//
 // public methods always call normalize().
 
 func (data *TimeData) setYear(y int) {
@@ -325,13 +321,12 @@ func (data *TimeData) In(loc *time.Location) *TimeData {
 	data.SetLocation(loc)
 	return data
 }
+
 // this function is same as `SetUTC` but returns the pointer of the TimeData variable
 func (data *TimeData) AsUTC() *TimeData {
 	data.SetUTC()
 	return data
 }
-
-
 
 // ============================================================
 // getter
@@ -394,14 +389,15 @@ func (data *TimeData) AddSecond(s int) {
 	data.SetSecond(data.s + s)
 }
 func (data *TimeData) AddMillisecond(ms int) {
-	data.SetNanosecond(data.ns + ms * 1e6)
+	data.SetNanosecond(data.ns + ms*1e6)
 }
 func (data *TimeData) AddMicrosecond(us int) {
-	data.SetNanosecond(data.ns + us * 1e3)
+	data.SetNanosecond(data.ns + us*1e3)
 }
 func (data *TimeData) AddNanosecond(ns int) {
 	data.SetNanosecond(data.ns + ns)
 }
+
 //func (data *TimeData) AddTimezoneOffset(z int) {
 //	data.setTimezoneOffset(data.z + z)
 //}
@@ -432,6 +428,7 @@ func (data *TimeData) SubMicrosecond(us int) {
 func (data *TimeData) SubNanosecond(ns int) {
 	data.AddNanosecond(-ns)
 }
+
 // ============================================================
 // Diff
 // ============================================================
@@ -443,10 +440,10 @@ func (data *TimeData) DiffMonths(d *TimeData) int {
 	y_ := data.y - d.y
 	m_ := data.m - d.m
 	d_ := data.d - d.d
-	
+
 	m_ += y_ * 12
 
-	if m_ > 0 && d_ < 0 { 
+	if m_ > 0 && d_ < 0 {
 		m_--
 	} else if m_ < 0 && d_ > 0 {
 		m_++
@@ -474,7 +471,6 @@ func (data *TimeData) DiffMicroseconds(d *TimeData) int64 {
 func (data *TimeData) DiffNanoseconds(d *TimeData) int64 {
 	return data.UnixNano() - d.UnixNano()
 }
-
 
 // ============================================================
 // flags
@@ -590,8 +586,6 @@ func (data *TimeData) Format(s string) string {
 func (data *TimeData) String() string {
 	return data.Format("c")
 }
-
-
 
 // ============================================================
 // Addition
